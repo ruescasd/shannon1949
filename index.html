@@ -150,7 +150,6 @@ function go() {
 	document.getElementById('messages').innerHTML = messages;
 	document.getElementById('ciphertexts').innerHTML = messages * key_size;
 
-	// http://www.fi.muni.cz/~xbouda1/teaching/2010/IV111/lecture8.pdf
 	var exponent = characters * redundancy;
 	var expected_keys = (key_size / Math.pow(2, exponent)) - 1;
 	var unicity = Math.log2(key_size) / redundancy;

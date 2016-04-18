@@ -1,0 +1,282 @@
+<html>
+<head>
+<style media="screen" type="text/css">
+	/* taken from http://matthewjamestaylor.com/blog/perfect-2-column-double-page.htm */
+	/* <!-- */
+	/* General styles */
+	body {
+		margin:0;
+		padding:0;
+		border:0;			/* This removes the border around the viewport in old versions of IE */
+		width:100%;
+		background:#fff;
+		min-width:600px;    	/* Minimum width of layout - remove line if not required */
+						/* The min-width property does not work in old versions of Internet Explorer */
+		font-size:90%;
+	}
+	/* 'widths' sub menu */
+	#layoutdims {
+		clear:both;
+		background:#eee;
+		border-top:4px solid #000;
+		margin:0;
+		padding:6px 15px !important;
+		text-align:right;
+	}
+	/* column container */
+	.colmask {
+		clear:both;
+		float:left;
+		width:100%;			/* width of whole page */
+		overflow:hidden;		/* This chops off any overhanging divs */
+	}
+	/* common column settings */
+	.colright,
+	.colmid,
+	.colleft {
+		float:left;
+		width:100%;
+		position:relative;
+	}
+	.col1,
+	.col2,
+	.col3 {
+		float:left;
+		position:relative;
+		padding:0 0 1em 0;
+		overflow:hidden;
+	}
+	/* 2 Column (double page) settings */
+	.doublepage {
+		background:#eee;		/* right column background colour */
+	}
+	.doublepage .colleft {
+		right:50%;			/* right column width */
+		background:#fff;		/* left column background colour */
+	}
+	.doublepage .col1 {
+		width:56%;			/* left column content width (column width minus left and right padding) */
+		left:52%;			/* right column width plus left column left padding */
+	}
+	.doublepage .col2 {
+		width:36%;			/* right column content width (column width minus left and right padding) */
+		left:56%;			/* (right column width) plus (left column left and right padding) plus (right column left padding) */
+	}
+	/* --> */
+	</style>
+</head>
+
+<body>
+<div class="colmask doublepage">
+	<div class="colleft">
+		<div class="col1">
+			<div style="align:left;height:100%;width:100%" id="chart"></div>
+
+		</div>
+		<div class="col2">
+			http://netlab.cs.ucla.edu/wiki/files/shannon1949.pdf
+			<p>Message size (1-20) <input value="14" id="chars" type="range" min="1" max="20" /></p>
+			<p>Language entropy (0-1) <input value="7000" id="entropy" type="range" min="1" max="8000" /></p>
+			<p>Keys (1-256) <input value="40" id="keys_input" type="range" min="1" max="256" /></p>
+			<p><input onclick="go_()" type="button" value="go" id="go"/> </p>
+			<hr/>
+			<p>Message length (<b><i>n</i></b>): <span id="m_length"></span></p>
+			<p>Language entropy (<b><i>H<sub>L</sub></i></b>): <span id="l_entropy"></span></p>
+			<p>Language redundancy (<b>D</b>): <span id="l_redundancy"></span></p>
+			<p>Keys (<b><i>|K|</i></b>): <span id="keys"></span></p>
+			<p>Plaintexts (<b><i>|P<sup>n</sup>|</i></b>): <span id="plaintexts"></span></p>
+			<p>Messages: <span id="messages"></span></p>
+			<p>Ciphertexts (<b><i>|C|</i></b>): <span id="ciphertexts"></span></p>
+			<p>Unicity <img src="https://upload.wikimedia.org/math/e/0/6/e064a96e7aef744ad0d295abace456f5.png" style="width:50px;height:14px;vertical-align:middle"/> : <span id="unicity"></span></p>
+			<p>Spurious keys lower bound <img src="spurious.png" style="width:50px;height:28px;vertical-align:middle"/> : <span id="expected_keys"></span></p>
+			<p>Spurious keys per ciphertext (<b><i>s<sub>n</sub></i></b>): <span id="actual_keys"></span></p>
+			<p>Plot sample: <span id="plot_sample"></span></p>
+		</div>
+	</div>
+</div>
+
+<script src="http://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.js"></script>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+var max_points = 500000;
+var chart = new CanvasJS.Chart("chart", {
+	zoomEnabled: true,
+	zoomType: "xy",
+	title:{
+	},
+	axisX:{
+  		tickLength: 0,
+		interval: 1000000000000,
+		maximum: 10
+	},
+	axisY:{
+	   includeZero: false,
+	   tickLength: 0,
+	   interval: 1000000000000,
+	   maximum: 10
+	},
+	data: [{
+  		type: "scatter"
+	}]
+});
+chart.render();
+
+function go_() {
+	document.getElementById("go").value = 'working..';
+	setTimeout(function() {
+		go();
+	}, 20);
+}
+
+function go() {
+	var characters = document.getElementById("chars").value
+	var entropy = (document.getElementById("entropy").value / 10000) * 1;
+	var redundancy = 1.0 - entropy;
+	var plaintexts = Math.pow(2, characters);
+	var key_size = document.getElementById("keys_input").value;
+	var fraction = Math.pow(2, characters * entropy) / Math.pow(2, characters)
+	var messages = Math.round(fraction * plaintexts);
+
+	// clear chart
+	chart.options.data[0].dataPoints = [];
+	chart.options.axisX.maximum = plaintexts;
+	chart.options.axisY.maximum = plaintexts;
+	chart.render();
+
+	document.getElementById('m_length').innerHTML = characters;
+	document.getElementById('l_entropy').innerHTML = entropy;
+	document.getElementById('l_redundancy').innerHTML = redundancy;
+	document.getElementById('plaintexts').innerHTML = plaintexts;
+	document.getElementById('messages').innerHTML = messages;
+	document.getElementById('ciphertexts').innerHTML = messages * key_size;
+
+	// http://www.fi.muni.cz/~xbouda1/teaching/2010/IV111/lecture8.pdf
+	var exponent = characters * redundancy;
+	var expected_keys = (key_size / Math.pow(2, exponent)) - 1;
+	var unicity = Math.log2(key_size) / redundancy;
+
+	console.log("Message length " + characters);
+	console.log("Entropy " + entropy + " redundancy " + redundancy);
+	console.log("Keys " + key_size);
+	console.log("Fraction " + fraction + " plaintext_size " + plaintexts + " messages " + messages);
+	console.log("Expected keys: " + expected_keys);
+
+	var keys = [];
+	var values = [];
+	var all = [];
+
+	// create keys
+	console.log("Generating keys..");
+	for(var i = 0; i < plaintexts; i++) {
+		all.push(i);
+	}
+	if(key_size > all.length)	key_size = all.length;
+	document.getElementById('keys').innerHTML = key_size;
+
+	for(var i = 0; i < key_size; i++) {
+		var index = Math.floor(Math.random() * all.length);
+		keys.push(all[index]);
+		all[index] = all[all.length - 1];
+		all.pop();
+	}
+
+	all = [];
+	for(var i = 0; i < plaintexts; i++) {
+		all.push(i);
+	}
+
+	// create ciphertexts incrementally
+	var batch_size = 10000;
+	var counter = 0;
+	console.log("Generating ciphertexts..");
+	var start = new Date().getTime();
+	function encrypt() {
+		console.log(counter + ' / ' + messages);
+		for(var i = 0; i < batch_size; i++, counter++) {
+			if(counter >= messages)	break;
+			var index = Math.floor(Math.random() * all.length);
+			var next = all[index];
+			all[index] = all[all.length - 1];
+			all.pop();
+
+			for(var j = 0; j < keys.length; j++) {
+				values.push({y: next, x: next ^ keys[j], markerColor: "black", markerSize: 2, markerBorderThickness: 0});
+			}
+		}
+		if(counter >= messages) {
+			var time = new Date().getTime() - start;
+			console.log('Encryption time: ' + time + ' ' + start);
+
+			console.log("Analyzing data..");
+			var lines = {};
+			for(var i = 0; i < values.length; i++) {
+
+				var c = values[i].x;
+
+				if(lines.hasOwnProperty(c)) {
+					lines[c] = lines[c] + 1;
+				}
+				else {
+					lines[c] = 1;
+				}
+			}
+			for(var i = 0; i < values.length; i++) {
+				var c = values[i].x;
+
+				if(lines[c] <= 1) {
+					values[i].markerColor = "red";
+				}
+				else {
+					values[i].markerColor = "blue";
+				}
+			}
+
+			// calculate spurious keys
+			var k = Object.keys(lines);
+			var total_spurious = 0;
+			var perfect = true;
+			for(var i = 0; i < k.length; i++) {
+				total_spurious += lines[k[i]];
+				if(lines[k[i]] < messages) perfect = false;
+			}
+
+			var avg_spurious_keys = ((total_spurious / k.length) - 1);
+			if(perfect) {
+				avg_spurious_keys += ' (Perfect secrecy)'
+			}
+			console.log("Average spurious keys " + avg_spurious_keys);
+
+			document.getElementById('expected_keys').innerHTML = expected_keys;
+			document.getElementById('actual_keys').innerHTML = avg_spurious_keys;
+			document.getElementById('unicity').innerHTML = unicity;
+
+			// truncate, more than 500k charted points breaks browser
+			var plot_sample = '100%';
+			if(values.length > max_points) {
+				console.log('truncating ' + values.length);
+				plot_sample = Math.round(100 * max_points / values.length) + '%';
+				values = values.splice(0, max_points);
+			}
+			document.getElementById('plot_sample').innerHTML = plot_sample;
+
+			// plot points
+			console.log("Plotting " + values.length + " points");
+			chart.options.data[0].dataPoints = values;
+		    start = new Date().getTime();
+		    chart.render();
+		    // var data = Plotly.newPlot('chart', data);
+		    time = new Date().getTime() - start;
+			console.log('Plot time: ' + time);
+			document.getElementById("go").value = 'go';
+		}
+		else {
+			setTimeout(encrypt, 0);
+		}
+	}
+
+	setTimeout(encrypt, 0);
+}
+</script>
+</body>
+</html>

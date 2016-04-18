@@ -5,4 +5,6 @@ This is a toy model of the basic ideas present in Claude Shannon's seminal [Comm
 
 ### How it works
 
-Adjust the slider bars for message size (n), language entropy (Hl) and key space size (|K|), then press go. The code will generate messages, keys and ciphertexts and obtain data about the privacy properties of the cryptosystem. A plot of ciphertexts against messages shows how the three input parameters influence the information-theoretic quantities.
+Adjust the slider bars for message size (n), language entropy (Hl) and key space size (|K|), then press go. The code will generate messages, keys and ciphertexts and calculate some theoretical and statistical quantities. A plot of ciphertexts against messages shows how the three input parameters influence the information-theoretic secrecy properties of the cryptosystem.
+
+Note that setting large values for the three parameters results in larger plaintext, ciphertext and key space, meaning more data to analyze. It may take some time.

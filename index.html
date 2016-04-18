@@ -135,6 +135,7 @@ function go() {
 	var redundancy = 1.0 - entropy;
 	var plaintexts = Math.pow(2, characters);
 	var key_size = document.getElementById("keys_input").value;
+	if(key_size > plaintexts)	key_size = plaintexts;
 	var fraction = Math.pow(2, characters * entropy) / Math.pow(2, characters)
 	var messages = Math.round(fraction * plaintexts);
 
@@ -150,6 +151,7 @@ function go() {
 	document.getElementById('plaintexts').innerHTML = plaintexts;
 	document.getElementById('messages').innerHTML = messages;
 	document.getElementById('ciphertexts').innerHTML = messages * key_size;
+	document.getElementById('keys').innerHTML = key_size;
 
 	var exponent = characters * redundancy;
 	var expected_keys = (key_size / Math.pow(2, exponent)) - 1;
@@ -170,8 +172,6 @@ function go() {
 	for(var i = 0; i < plaintexts; i++) {
 		all.push(i);
 	}
-	if(key_size > all.length)	key_size = all.length;
-	document.getElementById('keys').innerHTML = key_size;
 
 	for(var i = 0; i < key_size; i++) {
 		var index = Math.floor(Math.random() * all.length);

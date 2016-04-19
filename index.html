@@ -172,7 +172,7 @@ function go() {
 	for(var i = 0; i < plaintexts; i++) {
 		all.push(i);
 	}
-
+	var all_copy = all.slice(0);
 	for(var i = 0; i < key_size; i++) {
 		var index = Math.floor(Math.random() * all.length);
 		keys.push(all[index]);
@@ -180,10 +180,7 @@ function go() {
 		all.pop();
 	}
 
-	all = [];
-	for(var i = 0; i < plaintexts; i++) {
-		all.push(i);
-	}
+	all = all_copy;
 
 	// create ciphertexts incrementally
 	var batch_size = 10000;

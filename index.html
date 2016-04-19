@@ -234,7 +234,7 @@ function go() {
 			// calculate spurious keys
 			var k = Object.keys(lines);
 			var total_spurious = 0;
-			var perfect = true;
+			var perfect = true && (messages > 1);
 			for(var i = 0; i < k.length; i++) {
 				total_spurious += lines[k[i]];
 				if(lines[k[i]] < messages) perfect = false;

@@ -1,4 +1,4 @@
-![alt text](https://nvotes.com/wp-content/uploads/g1.png)
+![alt text](https://nvotes.com/wp-content/uploads/g12.png)
 
 Shannon1949
 ============
